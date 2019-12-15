@@ -142,11 +142,16 @@ namespace Engine {
 
 		size_t pos_index, norm_index, text_index;
 
-		VertexBuffer testPos, testNorm, testTexts;
+
+		std::vector<glm::vec3> tangents;
+		std::vector<glm::vec3> bitangents;
+
+
+		VertexBuffer testPos, testNorm, testTexts, testTanagents;
 		VertexArray testVa;
 
 	public:
-		
+
 		/**
 		* Default Contructor useful for initializations of the fields
 		*/
@@ -218,11 +223,13 @@ namespace Engine {
 		size_t Vertices(void) { return pos_index / 3; }
 		size_t Normals(void) { return norm_index / 3; }
 
+		void calculate_tangents(void);
+
 		//static TextureManager* textmanager;
 
 	};
 
-	//TextureManager* Mesh::textmanager = new TextureManager();
+	
 }
 
 #endif//!MESH_H

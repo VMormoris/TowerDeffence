@@ -6,28 +6,28 @@
 #include "Pirate.h"
 
 
-class Game : public Engine::Renderer {
+class MainScene : public Engine::Scene {
 private:
 
-	Knossos* knossos;
-	Skeleton* skeleton;
-	Pirate* pirate;
+
+	std::vector<Engine::GameObject*> objects;
+	Engine::SpotLight lamp;
+
 
 	bool InitRenderingTechniques(void) override;
-	bool InitIntermediateShaderBuffers(void) override;
-	bool InitCommonItems(void) override;
 	bool InitGeometricMeshes(void) override;
-
+	bool InitLightSources(void) override;
 
 public:
 
-	Game(void);
-	~Game(void);
+	MainScene(Engine::Camera* cam);
+	~MainScene(void);
 
 	void Update(float dt);
 
+	void RenderShadowmap(void) override;
 	void RenderGeometry(void) override;
-
+	void RenderOutFB(void) override;
 
 };
 

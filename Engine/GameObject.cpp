@@ -23,4 +23,16 @@ namespace Engine {
 		}
 	}
 
+	void GameObject::DrawShadowmap(Shader& program) {
+
+		mesh->Bind();
+		
+		GLCall(glUniformMatrix4fv(program["uniform_model_matrix"], 1, GL_FALSE, glm::value_ptr(transformation_matrix)));
+		for (int j = 0; j < mesh->parts.size(); j++)
+		{
+			GLCall(glDrawArrays(GL_TRIANGLES, mesh->parts[j].start_offset, mesh->parts[j].count));
+		}
+
+	}
+
 }

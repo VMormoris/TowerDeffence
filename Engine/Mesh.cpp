@@ -4,7 +4,7 @@
 #include <fstream>
 
 
-static Engine::TextureManager textmanager;
+
 
 namespace Engine {
 
@@ -34,16 +34,20 @@ namespace Engine {
 		testNorm.FillBuffer(normals, norm_index * sizeof(float));
 		testVa.AddAttribute(threefloats);
 
-		if (text_index > 0) {
-			testTexts.Generate();
-			testTexts.FillBuffer(textCoords, text_index * sizeof(float));
-			testVa.AddAttribute(twofloats);
+		testTexts.Generate();
+		testTexts.FillBuffer(textCoords, text_index * sizeof(float));
+		testVa.AddAttribute(twofloats);
+
+		if (!tangents.empty()) { 
+			testTanagents.Generate();
+			testTanagents.FillBuffer(&tangents[0], tangents.size() * sizeof(glm::vec3));
+			testVa.AddAttribute(threefloats);
 			testVa.Unbind();
-			testTexts.Unbind();
+			testTanagents.Unbind();
 		}
 		else {
 			testVa.Unbind();
-			testNorm.Unbind();
+			testTexts.Unbind();
 		}
 
 		for (int i = 0; i < objects.size(); i++) {
@@ -56,7 +60,8 @@ namespace Engine {
 			part.diffuseColor = glm::vec4(material.diffuse[0], material.diffuse[1], material.diffuse[2], 1.f);
 			part.specularColor = glm::vec3(material.specular[0], material.specular[1], material.specular[2]);
 			part.shininess = material.shininess;
-			part.textureID = (material.texture.empty()) ? 0 : textmanager.RequestTexture(material.texture.c_str());
+			part.textureID = (material.texture.empty()) ? 0 : TextureManager::RequestTexture(material.texture.c_str());
+			//printf("%d\n",part.textureID);
 			parts.push_back(part);
 		}
 		
@@ -108,5 +113,61 @@ namespace Engine {
 		textCoords[text_index] = value;
 		text_index++;
 	}
+
+	void Mesh::calculate_tangents()
+	{
+		tangents.clear();
+
+		for (unsigned int i = 0; i < Vertices(); i += 3)
+		{
+			glm::vec3 v0(vertices[i * 3 + 0], vertices[i * 3 + 1], vertices[i * 3 + 2]);//glm::vec3& v0 = mesh->vertices[i + 0];
+			glm::vec3 v1(vertices[i * 3 + 3], vertices[i * 3 + 4], vertices[i * 3 + 5]);
+			glm::vec3 v2(vertices[i * 3 + 6], vertices[i * 3 + 7], vertices[i * 3 + 8]);
+
+			glm::vec2 uv0(textCoords[i + 0], textCoords[i + 1]);
+			glm::vec2 uv1(textCoords[i + 2], textCoords[i + 3]);
+			glm::vec2 uv2(textCoords[i + 4], textCoords[i + 5]);
+
+			// edges of the triangle : position delta
+			glm::vec3 deltaPos1 = v1 - v0;
+			glm::vec3 deltaPos2 = v2 - v0;
+
+			// uv delta
+			glm::vec2 deltaUV1 = uv1 - uv0;
+			glm::vec2 deltaUV2 = uv2 - uv0;
+
+			float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+			glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
+			glm::vec3 b = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
+
+			// set the same tangent for all the three vertices of the triangle.
+			// they will be merged later
+
+			tangents.push_back(tangent);
+			tangents.push_back(tangent);
+			tangents.push_back(tangent);
+
+			bitangents.push_back(b);
+			bitangents.push_back(b);
+			bitangents.push_back(b);
+		}
+
+		for (unsigned int i = 0; i < Vertices(); i += 3)
+		{
+			glm::vec3 n (normals[i+0], normals[i+1], normals[i+2]);
+			glm::vec3& t = tangents[i/3];
+			glm::vec3& b = bitangents[i/3];
+
+			// Gram-Schmidt orthogonalize
+			t = glm::normalize(t - n * glm::dot(n, t));
+
+			// Calculate handedness
+			if (glm::dot(glm::cross(n, t), b) < 0.0f) {
+				t = t * -1.0f;
+			}
+
+		}
+	}
+
 
 }

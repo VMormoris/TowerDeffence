@@ -13,9 +13,13 @@ namespace Engine {
 		glm::mat4 transformation_matrix;
 		glm::mat4 normal_matrix;
 	public:
+		virtual ~GameObject(void) {}
 		void Draw(Shader& program);
+		void DrawShadowmap(Shader& program);
+		virtual void Update(float time) = 0;
 	};
 
+	
 }
 
 #endif // !GAME_OBJECT_H

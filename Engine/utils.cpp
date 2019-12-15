@@ -12,6 +12,15 @@
 
 namespace Engine {
 	namespace utils {
+
+		void GPU_INFO(void){
+			const unsigned char* vendor;
+			const unsigned char* renderer;
+			GLCall(vendor = glGetString(GL_VENDOR));
+			GLCall(renderer = glGetString(GL_RENDERER));
+			std::cout << "Manifacturer: " << vendor << std::endl << "Model: " << renderer << std::endl << std::endl;
+		}
+
 		void GLClearError() {
 			while (glGetError() != GL_NO_ERROR);//Calling glGetError in loop in order to make sure that no more flags exist
 		}
@@ -38,6 +47,45 @@ namespace Engine {
 
 			//Create Window
 			SDL_Window* window = SDL_CreateWindow(WINDOW_NAME, START_WIDTH, START_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+			if (window == NULL) {
+				std::cout << "Could not create window: " << SDL_GetError() << std::endl;
+				return NULL;
+			}
+
+			//Create Context
+			gContext = SDL_GL_CreateContext(window);
+			if (gContext == NULL) {
+				std::cout << "OpenGL context could not be created! SDL Error: " << SDL_GetError() << std::endl;
+				return NULL;
+			}
+
+			// Disable Vsync
+			if (SDL_GL_SetSwapInterval(0) == -1) std::cout << "Warning: Unable to disable VSync! SDL Error: " << SDL_GetError() << std::endl;
+
+			//Load GLEW
+			GLenum err;
+			GLCall(err = glewInit());
+			if (err != GLEW_OK) {
+				std::cout << "Error loading GLEW" << std::endl;
+				return NULL;
+			}
+
+			return window;
+		}
+
+		SDL_Window* CreateFullscreenWindow(const char* WINDOW_NAME, SDL_GLContext& gContext) {
+			//Initialize SDL
+			if (SDL_Init(SDL_INIT_EVERYTHING) < 0) return NULL;
+
+			//use Double Buffering
+			if (SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1) == -1) std::cout << "Error: No double buffering" << std::endl;
+
+			//set OpenGL Version to 3.3
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+
+			//Create Window
+			SDL_Window* window = SDL_CreateWindow(WINDOW_NAME, START_WIDTH, START_HEIGHT, 0, 0, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP);
 			if (window == NULL) {
 				std::cout << "Could not create window: " << SDL_GetError() << std::endl;
 				return NULL;

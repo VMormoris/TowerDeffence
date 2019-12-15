@@ -5,7 +5,7 @@
 namespace Engine{
 
 	Camera::Camera(void) {
-		m_camera_position = glm::vec3(1, 3, -10);
+		m_camera_position = glm::vec3(1, 4, -10);
 		m_camera_target_position = glm::vec3(0, 0, 0);
 		m_camera_up_vector = glm::vec3(0, 1, 0);
 	}
@@ -13,8 +13,10 @@ namespace Engine{
 	Camera::~Camera(void) {}
 
 	void Camera::SetMatrixes(int width, int height) {
+
 		m_projection_matrix = glm::perspective(glm::radians(60.f), width / (float)height, 0.1f, 1500.0f);
 		m_view_matrix = glm::lookAt(m_camera_position, m_camera_target_position, m_camera_up_vector);
+	
 	}
 
 	glm::mat4 Camera::GetViewMatrix(void) { return m_view_matrix; }
@@ -25,12 +27,18 @@ namespace Engine{
 		float movement_speed = 2.0f;
 		glm::vec3 direction = glm::normalize(m_camera_target_position - m_camera_position);
 
-		m_camera_position += m_camera_movement.x * movement_speed * direction * dt;
-		m_camera_target_position += m_camera_movement.x * movement_speed * direction * dt;
+		//Move towards to the camera
+		m_camera_position += m_camera_movement.z * movement_speed * direction * dt;
+		m_camera_target_position += m_camera_movement.z * movement_speed * direction * dt;
 
+		//Move sideways
 		glm::vec3 right = glm::normalize(glm::cross(direction, m_camera_up_vector));
-		m_camera_position += m_camera_movement.y * movement_speed * right * dt;
-		m_camera_target_position += m_camera_movement.y * movement_speed * right * dt;
+		m_camera_position += m_camera_movement.x * movement_speed * right * dt;
+		m_camera_target_position += m_camera_movement.x * movement_speed * right * dt;
+
+		//Move up and down
+		m_camera_position += m_camera_movement.y * movement_speed * m_camera_up_vector * dt;
+		m_camera_target_position += m_camera_movement.y * movement_speed * m_camera_up_vector * dt;
 
 		glm::mat4 rotation = glm::mat4(1.0f);
 		float angular_speed = glm::pi<float>() * 0.0025f;
@@ -47,6 +55,12 @@ namespace Engine{
 	}
 
 
-
+	void Camera::MoveForward(bool enable) { m_camera_movement.z = (enable) ? 10 : 0; }
+	void Camera::MoveBackwards(bool enable) { m_camera_movement.z = (enable) ? -10 : 0; }
+	void Camera::MoveUpwards(bool enable) { m_camera_movement.y = (enable) ? 1 : 0; }
+	void Camera::MoveDownwards(bool enable) { m_camera_movement.y = (enable) ? -1 : 0; }
+	void Camera::MoveRight(bool enable) { m_camera_movement.x = (enable) ? 1 : 0; }
+	void Camera::MoveLeft(bool enable) { m_camera_movement.x = (enable) ? -1 : 0; }
+	void Camera::LookAt(glm::vec2 dcoords) { m_camera_look_angle_destination = glm::vec2(1, -1) * dcoords; }
 
 }

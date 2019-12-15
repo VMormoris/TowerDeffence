@@ -5,7 +5,8 @@
 class Knossos: public Engine::GameObject {
 public:
 	Knossos(void);
-	~Knossos(void);
+	~Knossos(void) override;
+	void Update(float time) {}
 };
 
 #endif // !KNOSSOS_H

@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 
+
 inline void read_vertex(const char* buff, std::vector<glm::vec3>& shared_vertices)
 {
 	glm::vec3 v;
@@ -529,6 +530,13 @@ namespace Engine {
 			bool flatShading = false;
 			//if (flatShading) calculate_flat_normals();
 			//else calculate_avg_normals(shared_vertices, mesh->normals, elements);
+		}
+
+		// check if we loaded an normal map
+		if (std::find_if(mesh->materials.begin(), mesh->materials.end(), [](Material mat) { return mat.textureBump.length() > 0; }) != mesh->materials.end())
+		{
+			mesh->calculate_tangents();
+			hasNormals = true;
 		}
 
 		return mesh;

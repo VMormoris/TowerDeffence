@@ -203,14 +203,14 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="MainScene.cpp" />
     <ClCompile Include="Knossos.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Pirate.cpp" />
     <ClCompile Include="Skeleton.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Game.h" />
+    <ClInclude Include="MainScene.h" />
     <ClInclude Include="Knossos.h" />
     <ClInclude Include="Pirate.h" />
     <ClInclude Include="Skeleton.h" />

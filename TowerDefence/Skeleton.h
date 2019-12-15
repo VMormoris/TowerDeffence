@@ -7,7 +7,7 @@
 class Skeleton : public Engine::GameObject {
 public:
 	Skeleton(void);
-	~Skeleton(void);
+	~Skeleton(void) override;
 	void Update(float time);
 };
 

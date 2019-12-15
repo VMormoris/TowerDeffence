@@ -17,6 +17,10 @@ namespace Engine{
 	namespace utils {
 
 		/**
+		* Printing GPU details
+		*/
+		ENGINE_API void GPU_INFO(void);
+		/**
 		*	Used for cleaning OpenGL stack of errors;
 		*/
 		ENGINE_API void GLClearError();
@@ -35,6 +39,15 @@ namespace Engine{
 		* @return A pointer to SDL_Window that describes the created window or null if failed
 		*/
 		ENGINE_API SDL_Window* CreateWindow(const char* WINDOW_NAME, int WINDOW_WIDTH, int WINDOW_HEIGHT, SDL_GLContext& gContext);
+
+
+		/**
+		* Create a Full screen window inorder to put the graphics from OpenGL using SDL
+		* @param WINDOW_NAME the title displayed for the window
+		* @param (out) gContext Loads the the context of the created window
+		* @return A pointer to SDL_Window that describes the created window or null if failed
+		*/
+		ENGINE_API SDL_Window* CreateFullscreenWindow(const char* WINDOW_NAME, SDL_GLContext& gContext);
 
 		/**
 		* Read files as a string(c style)
