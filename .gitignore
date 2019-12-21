@@ -1,2 +1,6 @@
 .vs
-TODO
+bin/Release-x64
+bin/Debug-x64
+bin/Release-Win32
+bin/Debug-Win32
+bin-int

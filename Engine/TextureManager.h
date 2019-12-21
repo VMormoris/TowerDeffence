@@ -3,7 +3,6 @@
 #define TEXTURE_MANAGER_H
 
 #include "Texture.h"
-#include <unordered_map>
 
 namespace Engine {
 	

@@ -1,6 +1,8 @@
+#include "engpch.h"
 #include "Spotlight.h"
-#include "gtc\matrix_transform.hpp"
 #include "utils.h"
+
+
 
 namespace Engine {
 	// Spot Light
@@ -28,35 +30,13 @@ namespace Engine {
 
 		if (cast)
 		{
-			/*
-			if (m_shadow_map_texture == 0) {
-				GLCall(glGenTextures(1, &m_shadow_map_texture));
-			}
-			// Depth buffer
-			GLCall(glBindTexture(GL_TEXTURE_2D, m_shadow_map_texture));
-			GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, m_shadow_map_resolution, m_shadow_map_resolution, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL));
-			GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-			GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-			GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-			GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-			GLCall(glBindTexture(GL_TEXTURE_2D, 0));
-			*/
 			Texture* shadowmap_texture = new Texture("shadowmap_texture", false);
 			shadowmap_texture->Generate();
 			shadowmap_texture->Bind();
 			shadowmap_texture->SetTextureImage(GL_DEPTH_COMPONENT24, m_shadow_map_resolution, m_shadow_map_resolution, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 			shadowmap_texture->setParameters<int>(GL_CLAMP_TO_EDGE, GL_NEAREST);
 			shadowmap_texture->Unbind();
-			/*
-
-			if (m_shadow_map_fbo == 0) {
-				GLCall(glGenFramebuffers(1, &m_shadow_map_fbo));
-			}
-			GLCall(glBindFramebuffer(GL_FRAMEBUFFER, m_shadow_map_fbo));
-			GLCall(glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_shadow_map_texture, 0));
-
 			
-			GLCall(glBindFramebuffer(GL_FRAMEBUFFER, 0));*/
 			shadowmap_fbo.Generate();
 			shadowmap_fbo.AddDepthTexture(shadowmap_texture);
 			shadowmap_fbo.Bind();

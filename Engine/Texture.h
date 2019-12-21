@@ -3,7 +3,6 @@
 #define TEXTURE_H
 #include "utils.h"
 #include "GLObject.h"
-#include <string>
 
 namespace Engine {
 

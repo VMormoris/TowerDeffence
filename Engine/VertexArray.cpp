@@ -1,5 +1,8 @@
+#include "engpch.h"
 #include "VertexArray.h"
 #include "utils.h"
+
+
 
 namespace Engine{
 	VertexArray::VertexArray(void) {

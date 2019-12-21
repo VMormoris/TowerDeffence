@@ -1,5 +1,5 @@
+#include "engpch.h"
 #include "TextureManager.h"
-#include "SDL_image.h"
 
 namespace Engine {
 
@@ -9,7 +9,6 @@ namespace Engine {
 		size_t size = textures.size();
 		for (size_t i = 0; i < size;i++) {
 			Texture* texture = textures[i];
-			printf("%d\n", texture->GetHandle());
 			delete texture;
 		}
 		textures.clear();

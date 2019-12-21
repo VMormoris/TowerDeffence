@@ -1,35 +1,27 @@
 #pragma once
-#ifndef _GAME_H
-#define _GAME_H
-#include "Knossos.h"
-#include "Skeleton.h"
+#ifndef MAIN_SCENE_H
+#define MAIN_SCENE_H
+#include <Engine.h>
 #include "Pirate.h"
+#include "Field.h"
 
-
-class MainScene : public Engine::Scene {
-private:
-
-
-	std::vector<Engine::GameObject*> objects;
-	Engine::SpotLight lamp;
-
-
-	bool InitRenderingTechniques(void) override;
-	bool InitGeometricMeshes(void) override;
-	bool InitLightSources(void) override;
-
+class MainScene : public Engine::Scene{
 public:
+	MainScene(Engine::Camera* camera);
+	~MainScene();
 
-	MainScene(Engine::Camera* cam);
-	~MainScene(void);
-
-	void Update(float dt);
+	void Update(float dt) override;
 
 	void RenderShadowmap(void) override;
 	void RenderGeometry(void) override;
 	void RenderOutFB(void) override;
 
+private:
+	Engine::SpotLight lamp;
+	bool InitRenderingTechniques(void) override;
+	bool InitGeometricMeshes(void) override;
+	bool InitLightSources(void) override;
 };
 
 
-#endif // !_GAME_H
+#endif // !MAIN_SCENE_H

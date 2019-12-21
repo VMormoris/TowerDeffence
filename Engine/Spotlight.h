@@ -2,11 +2,8 @@
 #define SPOT_LIGHT_H
 
 
-#include "glm.hpp"
-#include <unordered_map>
 #include "utils.h"
 #include "FrameBuffer.h"
-#include <string>
 
 namespace Engine {
 	class ENGINE_API SpotLight {

@@ -1,12 +1,8 @@
 #pragma once
 #ifndef UTILS_H
 #define UTILS_H
-
+#include "engpch.h"
 #include "Core.h"
-#include "glew.h"
-#include "SDL.h"
-#include <string>
-#include <future>
 
 #define ASSERT(x) if (!(x)) __debugbreak();
 #define GLCall(x) Engine::utils::GLClearError();\
@@ -56,7 +52,7 @@ namespace Engine{
 		*/
 		ENGINE_API char* readfileAsString(const char* filename);
 
-		ENGINE_API unsigned int getFrameBufferStatus(unsigned int framebufferID);
+		//ENGINE_API unsigned int getFrameBufferStatus(unsigned int framebufferID);
 		
 		/**
 		* Extract the path to the folder where filename is located
@@ -73,9 +69,16 @@ namespace Engine{
 		*/
 		ENGINE_API bool compareStringIgnoreCase(std::string str1, std::string str2);
 
-	}
+		/**
+		* Tranforms World Coordinates to Screen Coordinates
+		* @param coords Coordinates on the World
+		* @param projection Projection matrix
+		* @param view View matrix
+		* @return Coordinates on Screen
+		*/
+		glm::vec2 project(glm::vec3 coords, glm::mat4 projection, glm::mat4 view, float WIDTH, float HEIGHT);
 
-	//ENGINE_API Mesh* loadObject(const char* filename);
+	}
 
 }
 

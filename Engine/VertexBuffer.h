@@ -1,7 +1,9 @@
 #pragma once
 #ifndef VERTEX_BUFFER_H
 #define VERTEX_BUFFER_H
+
 #include "GLObject.h"
+
 namespace Engine {
 
 	class ENGINE_API VertexBuffer: public GLObject {

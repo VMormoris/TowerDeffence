@@ -1,25 +1,32 @@
 #pragma once
 #ifndef GAME_OBJECT_H
 #define GAME_OBJECT_H
+#include "Object3D.h"
+#include "EventSystem.h"
 
-#include "Mesh.h"
-#include "Shader.h"
 
 namespace Engine {
-
-	class ENGINE_API GameObject {
+	
+	class ENGINE_API GameObject: public ClickListener, KeyListener{
+	private:
+		bool is_touched;
 	protected:
-		Mesh* mesh;
-		glm::mat4 transformation_matrix;
-		glm::mat4 normal_matrix;
+		glm::vec3 center;
+		glm::vec3 rotation_vector;
+		float angle;
+		glm::vec3 scale;
+		std::vector<Object3D*> objects;
 	public:
-		virtual ~GameObject(void) {}
-		void Draw(Shader& program);
+		virtual ~GameObject(void);
 		void DrawShadowmap(Shader& program);
-		virtual void Update(float time) = 0;
+		void Draw(Shader& program);
+		virtual void Update(float time);
+		virtual bool onEvent(const SDL_Event& event) override;
+		virtual bool onMousePress(const SDL_Event& event) override;
+		virtual bool onMouseRelease(const SDL_Event& event) override;
 	};
 
-	
+
 }
 
 #endif // !GAME_OBJECT_H

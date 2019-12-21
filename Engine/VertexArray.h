@@ -3,7 +3,8 @@
 #define VERTEX_ARRAY_H
 
 #include "GLObject.h"
-#include "glew.h"
+#include "engpch.h"
+
 
 namespace Engine {
 

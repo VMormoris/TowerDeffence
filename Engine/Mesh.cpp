@@ -1,53 +1,50 @@
+#include "Loader.h"
+#include "engpch.h"
 #include "Mesh.h"
-#include "utils.h"
-#include <iostream>
-#include <fstream>
+#include "TextureManager.h"
 
+namespace Engine{
 
-
-
-namespace Engine {
-
-	Mesh::Mesh(void) {
-		vertices = NULL;  pos_index = 0;
-		normals = NULL;  norm_index = 0;
-		textCoords = NULL; text_index = 0;
+	Mesh::Mesh()
+	{
+		vvbo = nvbo = tvbo = tanvbo = NULL;
+		vao = NULL;
 	}
 
-	Mesh::~Mesh(void) {
-		freemem();
-	}
-
-	void Mesh::setupBuffers(void) {
+	void Mesh::Init(void) {
 		Attribute threefloats(3);
 		Attribute twofloats(2);
-	
 
-		testVa.Generate();
-		testVa.Bind();
-		
-		testPos.Generate();
-		testPos.FillBuffer(vertices, pos_index * sizeof(float));
-		testVa.AddAttribute(threefloats);
-		
-		testNorm.Generate();
-		testNorm.FillBuffer(normals, norm_index * sizeof(float));
-		testVa.AddAttribute(threefloats);
+		vao = new VertexArray();
+		vao->Generate();
+		vao->Bind();
 
-		testTexts.Generate();
-		testTexts.FillBuffer(textCoords, text_index * sizeof(float));
-		testVa.AddAttribute(twofloats);
+		vvbo = new VertexBuffer();
+		vvbo->Generate();
+		vvbo->FillBuffer(&vertices[0], vertices.size() * sizeof(glm::vec3));
+		vao->AddAttribute(threefloats);
 
-		if (!tangents.empty()) { 
-			testTanagents.Generate();
-			testTanagents.FillBuffer(&tangents[0], tangents.size() * sizeof(glm::vec3));
-			testVa.AddAttribute(threefloats);
-			testVa.Unbind();
-			testTanagents.Unbind();
+		nvbo = new VertexBuffer();
+		nvbo->Generate();
+		nvbo->FillBuffer(&normals[0], normals.size() * sizeof(glm::vec3));
+		vao->AddAttribute(threefloats);
+
+		tvbo = new VertexBuffer();
+		tvbo->Generate();
+		tvbo->FillBuffer(&textureCoord[0], textureCoord.size() * sizeof(glm::vec2));
+		vao->AddAttribute(twofloats);
+
+		if (!tangents.empty()) {
+			tanvbo = new VertexBuffer();
+			tanvbo->Generate();
+			tanvbo->FillBuffer(&tangents[0], tangents.size() * sizeof(glm::vec3));
+			vao->AddAttribute(threefloats);
+			vao->Unbind();
+			tanvbo->Unbind();
 		}
 		else {
-			testVa.Unbind();
-			testTexts.Unbind();
+			vao->Unbind();
+			tvbo->Unbind();
 		}
 
 		for (int i = 0; i < objects.size(); i++) {
@@ -64,110 +61,75 @@ namespace Engine {
 			//printf("%d\n",part.textureID);
 			parts.push_back(part);
 		}
-		
 	}
 
-	void Mesh::Bind(void) const { testVa.Bind();}
 
-	void Mesh::Unbind(void) const { testVa.Unbind(); }
-
-	void Mesh::setmem(size_t faces_size, bool hasTextures) {
-		vertices = new float[faces_size * 3 * 3];
-		normals = new float[faces_size * 3 * 3];
-		if (hasTextures)
-			textCoords = new float[faces_size * 2 * 3];
-	}
-
-	void Mesh::freemem(void) {
-		if (vertices != NULL) delete[] vertices;
-		if (normals != NULL) delete[] normals;
-		if (textCoords != NULL) delete[] textCoords;
-	}
-
-	Material* Mesh::findMaterial(std::string str) {
+	Material* Mesh::findMaterial(std::string str)
+	{
 		if (str.empty()) str = "default";
-		for (int i = 0; i < materials.size(); i++) {
+		for (unsigned int i = 0; i < materials.size(); i++)
+		{
 			if (materials[i].name == str) return &materials[i];
 		}
 		return NULL;
 	}
 
-	int Mesh::findMaterialID(std::string str) {
+	int Mesh::findMaterialID(std::string str)
+	{
 		if (str.empty()) str = "default";
-		for (int i = 0; i < materials.size(); i++) {
-			if (materials[i].name == str) return i;
+		for (unsigned int i = 0; i < materials.size(); i++)
+		{
+			if (materials[i].name == str)
+				return i;
 		}
 		return -1;
 	}
 
-	void Mesh::setNextPosition(float value) {
-		vertices[pos_index] = value;
-		pos_index++;
-	}
-
-	void Mesh::setNextNormal(float value) {
-		normals[norm_index] = value;
-		norm_index++;
-	}
-	void Mesh::setNextTexture(float value) {
-		textCoords[text_index] = value;
-		text_index++;
-	}
-
-	void Mesh::calculate_tangents()
+	void Mesh::printObjects(void)
 	{
-		tangents.clear();
-
-		for (unsigned int i = 0; i < Vertices(); i += 3)
+		printf("\n          OBJECTS   :\n");
+		printf("Vertices =%zu \nNormals =%zu \nTextureCoords=%zu\n", vertices.size(), normals.size(), textureCoord.size());
+		printf("We loaded %zu meshes\n", objects.size());
+		glm::vec3 minValue(FLT_MAX);
+		glm::vec3 maxValue(-FLT_MAX);
+		for (glm::vec3 vertex : vertices)
 		{
-			glm::vec3 v0(vertices[i * 3 + 0], vertices[i * 3 + 1], vertices[i * 3 + 2]);//glm::vec3& v0 = mesh->vertices[i + 0];
-			glm::vec3 v1(vertices[i * 3 + 3], vertices[i * 3 + 4], vertices[i * 3 + 5]);
-			glm::vec3 v2(vertices[i * 3 + 6], vertices[i * 3 + 7], vertices[i * 3 + 8]);
-
-			glm::vec2 uv0(textCoords[i + 0], textCoords[i + 1]);
-			glm::vec2 uv1(textCoords[i + 2], textCoords[i + 3]);
-			glm::vec2 uv2(textCoords[i + 4], textCoords[i + 5]);
-
-			// edges of the triangle : position delta
-			glm::vec3 deltaPos1 = v1 - v0;
-			glm::vec3 deltaPos2 = v2 - v0;
-
-			// uv delta
-			glm::vec2 deltaUV1 = uv1 - uv0;
-			glm::vec2 deltaUV2 = uv2 - uv0;
-
-			float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
-			glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
-			glm::vec3 b = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
-
-			// set the same tangent for all the three vertices of the triangle.
-			// they will be merged later
-
-			tangents.push_back(tangent);
-			tangents.push_back(tangent);
-			tangents.push_back(tangent);
-
-			bitangents.push_back(b);
-			bitangents.push_back(b);
-			bitangents.push_back(b);
+			minValue = glm::min(minValue, vertex);
+			maxValue = glm::max(minValue, vertex);
+		}
+		printf("Min %f %f %f", minValue.x, minValue.y, minValue.z);
+		printf("Max %f %f %f", maxValue.x, maxValue.y, maxValue.z);
+		for (unsigned int i = 0; i < objects.size(); i++)
+		{
+			printf("\nObject %d ", i);
+			if (objects[i].name.size() > 0) printf("%s \n", objects[i].name.c_str());
+			else printf("\n");
+			printf("From %d to %d with %d faces\n", objects[i].start, objects[i].end, (objects[i].end - objects[i].start) / 3);
+			if (objects[i].material_id > 0) printf("Uses %d : %s material\n", objects[i].material_id, materials[objects[i].material_id].name.c_str());
+			else printf("Uses NO material\n");
 		}
 
-		for (unsigned int i = 0; i < Vertices(); i += 3)
+	}
+	void Mesh::printMaterials(void)
+	{
+		if (materials.empty()) printf(" NO MATERIALS \n");
+		else printf("\n USED MATERIALS :\n");
+		for (unsigned int i = 0; i < materials.size(); i++)
 		{
-			glm::vec3 n (normals[i+0], normals[i+1], normals[i+2]);
-			glm::vec3& t = tangents[i/3];
-			glm::vec3& b = bitangents[i/3];
-
-			// Gram-Schmidt orthogonalize
-			t = glm::normalize(t - n * glm::dot(n, t));
-
-			// Calculate handedness
-			if (glm::dot(glm::cross(n, t), b) < 0.0f) {
-				t = t * -1.0f;
-			}
-
+			printf("%i ", i);
+			printf("Diffuse : %f %f %f\n", materials[i].diffuse[0], materials[i].diffuse[1], materials[i].diffuse[2]);
 		}
 	}
 
+	Mesh::~Mesh(void) {
+		if (vvbo != NULL) delete vvbo;
+		if (nvbo != NULL) delete nvbo;
+		if (tvbo != NULL) delete tvbo;
+		if (tanvbo != NULL) delete tanvbo;
+		if (vao != NULL) delete vao;
+	}
+
+	void Mesh::Bind(void) const { vao->Bind(); }
+	void Mesh::Unbind(void) const { vao->Bind(); }
 
 }
