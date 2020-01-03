@@ -1,4 +1,7 @@
 #pragma once
+/**
+* Precompiled Header
+*/
 
 //Standard library dependecies
 #include <iostream>
@@ -18,9 +21,11 @@
 //SDL2
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
 //glm
 #include <glm.hpp>
-#include <gtx/rotate_vector.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
+#include <gtx/rotate_vector.hpp>
+#include <gtx/closest_point.hpp>
 //#include <gtx/intersect.hpp>

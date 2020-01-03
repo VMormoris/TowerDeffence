@@ -1,4 +1,6 @@
 #include "MainScene.h"
+#include "Field.h"
+#include "Road.h"
 
 MainScene::MainScene(Engine::Camera* camera) : Scene(camera) {}
 
@@ -6,7 +8,44 @@ MainScene::~MainScene() {}
 
 void MainScene::Update(float dt) {
 	Scene::Update(dt);
-	if (!paused) { for (Engine::GameObject* object : gmobjects) object->Update(timestamp); }
+	if (!paused) { 
+		for (Engine::GameObject* object : gmobjects) object->Update(dt); 
+		for (Tower* tower : towers) {
+			for (Pirate* pirate : pirates) {
+				float distance = glm::distance(pirate->getCoords(), tower->getCoords());
+				if (distance < 10.f) {
+					glm::vec3 target = pirate->CenterAt(timestamp + 1.f);
+					target.y = 1.f;
+					CannonBall* ball = tower->Fire(target, timestamp);
+					if (ball != NULL) { gmobjects.push_back(ball); colliders.push_back(ball); }
+				}
+			}
+		}
+	}
+}
+
+void MainScene::DeleteNotUsedObjects(void) {
+	std::vector<int> indexes;
+	for (int i = 0; i < pirates.size(); i++) {
+		if (pirates[i]->isForDelete()) { 
+			indexes.push_back(i); 
+		}
+	}
+	for (int i = (indexes.size() - 1); i >= 0; i--) {
+		int index = indexes[i];
+		pirates.erase(pirates.begin() + index);
+	}
+	indexes.clear();
+	for (int i = 0; i < gmobjects.size(); i++) {
+		Engine::GameObject* object = gmobjects[i];
+		if (object->isForDelete()) indexes.push_back(i);
+	}
+	for (int i = (indexes.size() - 1); i >= 0; i--) {
+		int index = indexes[i];
+		delete gmobjects[index];
+		gmobjects.erase(gmobjects.begin() + index);
+	}
+	indexes.clear();
 }
 
 
@@ -65,29 +104,91 @@ bool MainScene::InitRenderingTechniques(void) {
 
 bool MainScene::InitGeometricMeshes(void) {
 	bool initialized = true;
-	Engine::GameObject* knossos = new Field();
-	gmobjects.push_back(knossos);
-	//dispatchers.push_back(knossos);
-	//objects.push_back(new Skeleton());
+	Engine::GameObject* field = new Field();
+	gmobjects.push_back(field);
 	Pirate* pirate = new Pirate();
 	gmobjects.push_back(pirate);
-	listeners.push_back(pirate);
+	//listeners.push_back(pirate);
+	colliders.push_back(pirate);
+	pirates.push_back(pirate);
+	Road* road = new Road();
+	gmobjects.push_back(road);
+	Tower* tower = new Tower();
+	gmobjects.push_back(tower);
+	towers.push_back(tower);
 	return initialized;
 }
 
 bool MainScene::InitLightSources(void) {
-	lamp.SetPosition(glm::vec3(8, 14, -3));
-	lamp.SetTarget(glm::vec3(0, 4, 0));
-	lamp.SetColor(40.f * glm::vec3(255, 255, 251) / 255.f);
+	lamp.SetPosition(glm::vec3(16.f, 30.f, 16.f));
+	lamp.SetTarget(glm::vec3(16.4f, 0.f, 16.f));
+	lamp.SetColor(glm::vec3(140.f));
+	lamp.SetConeSize(73, 80);
 	lamp.CastShadow(true);
 	return true;
+}
+static bool flag = true;
+
+void MainScene::DetectCollisions(void) {
+	if (colliders.size() <= 1) return;
+	std::vector<int> indexes;
+	for (int i = 0; i < colliders.size() - 1; i++) {
+		for (int j = i + 1; j < colliders.size(); j++) {
+			CollisionListener* collider1 = colliders[i];
+			CollisionListener* collider2 = colliders[j];
+			if (collider1->GetTag().compare("cannonball") == 0 && collider2->GetTag().compare("cannonball") == 0) {
+				float distance = glm::distance(((CannonBall*)collider1)->getCoords(), ((CannonBall*)collider2)->getCoords());
+				if (distance <= 0.2) collider1->onCollision(collider2);
+			}
+			else if ((collider1->GetTag().compare("cannonball") == 0 && collider2->GetTag().compare("pirate") == 0) || (collider1->GetTag().compare("pirate") == 0 && collider2->GetTag().compare("cannonball") == 0)) {
+				Pirate* pirate;
+				CannonBall* ball;
+				int cdel_index = -1;
+				int pdel_index = -1;
+				if (collider1->GetTag().compare("cannonball") == 0) {
+					pirate = (Pirate*)collider2;
+					ball = (CannonBall*)collider1;
+					cdel_index = i;
+					pdel_index = j;
+				}
+				else {
+					pirate = (Pirate*)collider1;
+					ball = (CannonBall*)collider2;
+					cdel_index = j;
+					pdel_index = i;
+				}
+				glm::vec3* boxes = pirate->getBoxes();
+				glm::vec3 ballCenter = ball->getCoords();
+				for (int k = 0; k < 8; k += 2) {
+					glm::vec3 min = boxes[k] - glm::vec3(0.1);
+					glm::vec3 max = boxes[k + 1] + glm::vec3(0.1);
+
+					if (ballCenter.x >= min.x && ballCenter.x <= max.x && ballCenter.y >= min.y && ballCenter.y <= max.y && ballCenter.z >= min.z && ballCenter.z <= max.z) {
+						pirate->onCollision((CollisionListener*)ball);
+						ball->DeleteASAP();
+						indexes.push_back(cdel_index);
+						if (pirate->isForDelete()) { 
+							indexes.push_back(pdel_index);
+						}
+						break;
+					}
+				}
+				delete[] boxes;
+			}
+		}
+	}
+
+	std::sort(indexes.begin(), indexes.end(), [](int i, int j) {return i > j; });
+
+	for(int index: indexes)
+		colliders.erase(colliders.begin() + index);
 }
 
 void MainScene::RenderShadowmap(void) {
 	if (lamp.GetCastShadowsStatus()) {
 		int resolution = lamp.GetShadowMapResolution();
 
-		lamp.Bind();//GLCall(glBindFramebuffer(GL_FRAMEBUFFER, lamp.GetShadowMapFBO()));
+		lamp.Bind();
 		GLCall(glViewport(0, 0, resolution, resolution));
 		unsigned int drawbuffers[1] = { GL_COLOR_ATTACHMENT0 };
 		GLCall(glDrawBuffers(1, drawbuffers));
@@ -104,7 +205,7 @@ void MainScene::RenderShadowmap(void) {
 		shadowmap_program.Unbind();
 
 		GLCall(glDisable(GL_DEPTH_TEST));
-		lamp.Unbind();//GLCall(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+		lamp.Unbind();
 	}
 }
 
