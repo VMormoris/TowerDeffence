@@ -6,6 +6,7 @@ namespace Engine {
 	Sound::Sound(std::string filename) : AudioFile(filename) { sound = NULL; }
 
 	Sound::~Sound(void) {
+		Mix_CloseAudio();
 		if (sound != NULL) Mix_FreeChunk(sound);
 	}
 

@@ -6,6 +6,7 @@ namespace Engine {
 	Music::Music(std::string filename) : AudioFile(filename) { music = NULL; }
 
 	Music::~Music(void) {
+		Pause();
 		if (music != NULL) Mix_FreeMusic(music);
 	}
 

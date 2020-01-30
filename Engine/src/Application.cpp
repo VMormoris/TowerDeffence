@@ -29,6 +29,8 @@ namespace Engine {
 		SDL_GLContext gContext;
 		SDL_Window* window = Engine::utils::CreateFullscreenWindow(WINDOW_TITLE.c_str(), gContext);
 		AudioManager::Init();
+		Music* instrumental=AudioManager::RequestMusic("../Assets/Music/Eclosion/Salmo_-_01_-_Eclosion.mp3");
+		instrumental->Play();
 		if (window == NULL) {
 			printf("%s\n", "Creation of Window Failed!");
 			system("pause");

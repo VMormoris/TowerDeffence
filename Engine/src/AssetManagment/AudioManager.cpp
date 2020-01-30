@@ -19,12 +19,12 @@ namespace Engine {
 
 	void AudioManager::Clear(void) {
 
-		Mix_Quit();
 		for (Music* music : musics)
 			delete music;
 		for (Sound* sound : sounds)
 			delete sound;
-
+		Mix_Quit();
+		
 	}
 
 	int AudioManager::findSound(const char* filename) {
@@ -57,13 +57,15 @@ namespace Engine {
 
 	Music* AudioManager::RequestMusic(const char* filename) {
 		int index = findMusic(filename);
-		if (index != 1) return musics[index];
+		if (index != -1) return musics[index];
 		std::string new_musicname(filename);
 		Music* new_music = new Music(new_musicname);
 		if (new_music->Load()) {
 			musics.push_back(new_music);
 			music_names.push_back(new_musicname);
 		}
+		else return NULL;
+		return new_music;
 	}
 
 }
